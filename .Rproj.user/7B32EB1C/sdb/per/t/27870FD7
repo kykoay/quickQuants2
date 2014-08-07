@@ -1,0 +1,16 @@
+{
+    "contents" : "library(shiny)\nlibrary(quantmod)\nlibrary(xts)\nlibrary(rugarch)\nlibrary(stargazer)\nlibrary(knitr)\n\nshinyServer(function(input,output){\n  source(\"buildReg.R\")\n  source(\"portret.R\")\n  #Download factor data from Ken French's website. Possibily to extend to higher dimensions, but have to harmonise factor time series.\n  #This script is from Evan, and it extracts the FF-3 Factors and names it factors.\n  download.file(\"http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_daily.zip\",\"factors.zip\")\n  \n  factors=unz(\"factors.zip\",\"F-F_Research_Data_Factors_daily.txt\")\n  factors=read.table(factors,header=TRUE,skip=4,fill=TRUE)\n  n=nrow(factors)-1\n  \n  factors=unz(\"factors.zip\",\"F-F_Research_Data_Factors_daily.txt\")\n  factors=read.table(factors,header=TRUE,skip=4,fill=TRUE,nrows=n)\n  row.names(factors)=(as.Date(row.names(factors),format=\"%Y%m%d\"))\n  names(factors)[names(factors)==\"Mkt.RF\"]=\"MarketPremium\"\n  \n  \n  factors=as.xts(factors/100,dateFormat=\"Date\")\n\n  \n  #Make the selected dates and uploaded tickers and weights reactive.\n  dataInput<-reactive({\n    inFile<-input$file\n    \n    getSymbols(as.character(read.csv(inFile$datapath,head=FALSE)[,1]),src=\"yahoo\",from=input$dates[1],to=input$dates[2],auto.assign=TRUE)\n    Adjusted<-do.call(merge, lapply(as.character(read.csv(inFile$datapath,head=FALSE)[,1]), function(x) Ad(get(x))))\n    })\n  \n  portret=0\n  ret=NA\n  for (j in 1:length(weights)){\n    for(i in 2:nrow(Adjusted)){\n      ret[i]=(as.numeric(Adjusted[i,j])/as.numeric(Adjusted[i-1,j]))-1\n    }\n    portret=portret+(weight[j]*ret)\n  }\n  portret=na.omit(portret)\n  \n#As an illustration, let's plot portfolio returns.  \n  #portret=0\n  #ret=NA\n  #for (j in 1:length(weights)){\n    #for(i in 2:nrow(Adjusted)){\n      #ret[i]=(as.numeric(Adjusted[i,j])/as.numeric(Adjusted[i-1,j]))-1\n    #}\n    #portret=portret+(weight[j]*ret)\n  #}\n  #portret=na.omit(portret)\n  \noutput$plot<-renderPlot({\nplot(portret, \ntype = \"line\", TA = NULL,ylim=c(-0.20,0.2))\n})\n\n\n\n})\n\n\n\n\n  \n    \n             \n\n      \n    \n\n  \n  \n",
+    "created" : 1406814228007.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "464759341",
+    "id" : "27870FD7",
+    "lastKnownWriteTime" : 1406912205,
+    "path" : "C:/Users/user/~ShinyPractice/quickQuantsDev/quickQuants2/quickQuants2/server.R",
+    "project_path" : "quickQuants2/server.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

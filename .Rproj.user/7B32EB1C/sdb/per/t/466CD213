@@ -1,0 +1,17 @@
+{
+    "contents" : "inFile<-read.table(\"sample.csv\",sep=\",\")\nstart='2012-01-01'\n\nlibrary(shiny)\nlibrary(quantmod)\nlibrary(xts)\nlibrary(rugarch)\nlibrary(stargazer)\nlibrary(knitr)\n\n#Download factors from Ken French\ndownload.file(\"http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_daily.zip\",\"factors.zip\")\n\nfactors=unz(\"factors.zip\",\"F-F_Research_Data_Factors_daily.txt\")\nfactors=read.table(factors,header=TRUE,skip=4,fill=TRUE)\nn=nrow(factors)-1\n\nfactors=unz(\"factors.zip\",\"F-F_Research_Data_Factors_daily.txt\")\nfactors=read.table(factors,header=TRUE,skip=4,fill=TRUE,nrows=n)\nrow.names(factors)=(as.Date(row.names(factors),format=\"%Y%m%d\"))\nnames(factors)[names(factors)==\"Mkt.RF\"]=\"MarketPremium\"\n\n\nfactors=as.xts(factors/100,dateFormat=\"Date\")\n\n\nbuildPortReg=function(inFile,start,factors){\n  portfolio=list(\n      ticker=NULL\n      ,weight=NULL\n      ,ret=NULL\n    )\n  for(i in (1:nrow(inFile))){\n  \n    portfolio$ticker[i]=as.character(inFile[i,1])\n    portfolio$weight[i]=inFile[i,2]\n    ret=try(getSymbols(portfolio$ticker[i],auto.assign=FALSE,from=as.Date(start)))\n    \n    if(class(ret)[1]==\"try-error\"){\n      ##Catch error here with:\n      #error handling later \n      print(\"Oops... Something went horribly wrong. Please call Merissa.\")\n      return(\"fuck\")\n    }\n    ret=ret[,6]\n    names(ret)[1]=\"price\"\n    ret$ret=NA\n    for ( j in 2:nrow(ret)){\n      ret$ret[j]=as.numeric(ret$price[j])/as.numeric(ret$pric[j-1])-1\n    }\n    ret=na.omit(ret$ret)\n    if(i==1){\n      portfolio$ret=ret*portfolio$weight[i]\n    }else{\n      portfolio$ret=merge(portfolio$ret,ret*portfolio$weight[i],all = c(FALSE,FALSE))\n    }\n    #Keep in mind that portfolio$ret isn't ret in the usual sense... it's more like a contribution since it's already multiplied by the weight\n  }\n\n\n   portRet=as.xts(rowSums(portfolio$ret),order.by = index(portfolio$ret))\n    \n    out=(merge(portRet,factors,all=c(TRUE,FALSE)))\n    \n    return(out)\n  }\n}",
+    "created" : 1406909794641.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1773631809",
+    "id" : "466CD213",
+    "lastKnownWriteTime" : 1406930056,
+    "path" : "C:/Users/user/~ShinyPractice/quickQuantsDev/quickQuants2/buildPortReg.R",
+    "project_path" : "buildPortReg.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}
