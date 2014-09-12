@@ -18,9 +18,9 @@ shinyUI(fluidPage(
       ),    
 
     mainPanel(
-      plotOutput('plot'),
-      tableOutput('contents'),
-      textOutput('text1')
+     
+      textOutput("greeting"),
+      htmlOutput("regTable")
       )
   )
   ))

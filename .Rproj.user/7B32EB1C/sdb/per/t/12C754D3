@@ -1,0 +1,16 @@
+{
+    "contents" : "shinyUI(fluidPage(\n  titlePanel(\"Portfolio Factor Exposure\"),\n  \n  sidebarLayout(\n    sidebarPanel(\n      helpText(\"To construct your portfolio, you will first need to upload a textfile with the names of the constituent stocks/ETFs on one column and the corresponding weight of the stock/ETF in the portfolio in decimal form on the other column.\"),\n      h6(\"If you need help finding tickers,see\"),a(\"Investorhub\",href=\"http://www.myinvestorshub.com/yahoo_stock_list.php\"),\n      helpText(\"Reminder: you will need to type the corresponding weights of the given ticker on your portfolio.Please enter these weights in decimal form, as in 50% as 0.5.\"),\n      #allow users to upload a file with tickers and weights.\n      fileInput(\"file\",label=h3(\"file to be uploaded\")),\n      # Allow users to input dates for data. \n      dateRangeInput(inputId=\"dateRange\",\n                     label=\"Get data starting from:\",\n                     start=(Sys.Date()-365*2),\n                     min=\"1927-01-01\",\n                     startview=\"decade\"\n      )\n      ),    \n\n    mainPanel(\n     \n      textOutput(\"greeting\"),\n      htmlOutput(\"regTable\")\n      )\n  )\n  ))",
+    "created" : 1408065805460.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3366690326",
+    "id" : "12C754D3",
+    "lastKnownWriteTime" : 1410481627,
+    "path" : "C:/Users/user/~ShinyPractice/quickQuantsDev/quickQuants2/ui.R",
+    "project_path" : "ui.R",
+    "properties" : {
+    },
+    "source_on_save" : false,
+    "type" : "r_source"
+}

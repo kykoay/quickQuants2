@@ -1,28 +1,25 @@
-inFile<-read.table("sample.csv",sep=",")
-start='2012-01-01'
+# Checking if portreg works. Passed bug test. 
+#inFile<-read.table("sample.csv",sep=",")
+#start='2012-01-01'
+#download.file("http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_daily.zip","factors.zip")
 
+#factors=unz("factors.zip","F-F_Research_Data_Factors_daily.txt")
+#factors=read.table(factors,header=TRUE,skip=4,fill=TRUE)
+#n=nrow(factors)-1
+
+#factors=unz("factors.zip","F-F_Research_Data_Factors_daily.txt")
+#factors=read.table(factors,header=TRUE,skip=4,fill=TRUE,nrows=n)
+#row.names(factors)=(as.Date(row.names(factors),format="%Y%m%d"))
+#names(factors)[names(factors)=="Mkt.RF"]="MarketPremium"
+
+
+#factors=as.xts(factors/100,dateFormat="Date")
 library(shiny)
 library(quantmod)
 library(xts)
 library(rugarch)
 library(stargazer)
 library(knitr)
-
-#Download factors from Ken French
-download.file("http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_daily.zip","factors.zip")
-
-factors=unz("factors.zip","F-F_Research_Data_Factors_daily.txt")
-factors=read.table(factors,header=TRUE,skip=4,fill=TRUE)
-n=nrow(factors)-1
-
-factors=unz("factors.zip","F-F_Research_Data_Factors_daily.txt")
-factors=read.table(factors,header=TRUE,skip=4,fill=TRUE,nrows=n)
-row.names(factors)=(as.Date(row.names(factors),format="%Y%m%d"))
-names(factors)[names(factors)=="Mkt.RF"]="MarketPremium"
-
-
-factors=as.xts(factors/100,dateFormat="Date")
-
 
 buildPortReg=function(inFile,start,factors){
   portfolio=list(
@@ -58,10 +55,9 @@ buildPortReg=function(inFile,start,factors){
   }
 
 
-   portRet=as.xts(rowSums(portfolio$ret),order.by = index(portfolio$ret))
+   ret=as.xts(rowSums(portfolio$ret),order.by = index(portfolio$ret))
     
-    out=(merge(portRet,factors,all=c(TRUE,FALSE)))
+    out=(merge(ret,factors,all=c(TRUE,FALSE)))
     
     return(out)
   }
-}

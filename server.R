@@ -23,52 +23,103 @@ shinyServer(function(input,output){
   
   factors=as.xts(factors/100,dateFormat="Date")
   
-  #read the file uploaded by user
-  inFile=input$file
+  #grabbing user uploaded file and applies buildPortReg function on it.
   
-  #Copy Evan's reactive part,that is, the BuildReg part.
+  inFile=reactive({input$file})
   
-  
-  
-  
-  #Make the selected dates and uploaded tickers and weights reactive.
-  dataInput<-reactive({
-    inFile<-input$file
-    
-    getSymbols(as.character(read.csv(inFile$datapath,head=FALSE)[,1]),src="yahoo",from=input$dates[1],to=input$dates[2],auto.assign=TRUE)
-    Adjusted<-do.call(merge, lapply(as.character(read.csv(inFile$datapath,head=FALSE)[,1]), function(x) Ad(get(x))))
-  })
-  
-  portret=0
-  ret=NA
-  for (j in 1:length(weights)){
-    for(i in 2:nrow(Adjusted)){
-      ret[i]=(as.numeric(Adjusted[i,j])/as.numeric(Adjusted[i-1,j]))-1
-    }
-    portret=portret+(weight[j]*ret)
-  }
-  portret=na.omit(portret)
-  
-  #As an illustration, let's plot portfolio returns.  
-  #portret=0
-  #ret=NA
-  #for (j in 1:length(weights)){
-  #for(i in 2:nrow(Adjusted)){
-  #ret[i]=(as.numeric(Adjusted[i,j])/as.numeric(Adjusted[i-1,j]))-1
-  #}
-  #portret=portret+(weight[j]*ret)
-  #}
-  #portret=na.omit(portret)
-  
-  output$plot<-renderPlot({
-    plot(portret, 
-         type = "line", TA = NULL,ylim=c(-0.20,0.2))
-  })
-  
-  
-  
-})
+  observe({
+    if (is.null(inFile())) {
+      output$greeting=renderText({"Please upload a file"})
+    }else{
+      reg=reactive({
+        
+        inFile<-input$file
+        
+        inFile=read.csv(inFile$datapath,head=FALSE)
+        
+        return(buildPortReg(inFile,input$dateRange[1],factors)[paste(input$dateRange[1],"/",input$dateRange[2],sep="")])
+      })
+      
+      
+      modelCAPM=reactive(lm(I(ret-RF)~MarketPremium,data=reg()))
+      modelFF3=reactive(lm(I(ret-RF)~MarketPremium+SMB+HML,data=reg()))
 
+      output$regTable <- renderPrint({        
+        
+        stargazer(modelCAPM(),modelFF3(),dep.var.labels=input$ticker,type="html",title=paste("Factor Loadings from",range(index(reg()))[1],"to",range(index(reg()))[2],":"))
+        
+      })
+    }
+  })
+
+#Allows user to download output
+#output$downloadData <- downloadHandler(
+#filename = function() {
+#paste(input$ticker,'.csv', sep='')
+#},
+#content = function(con) {
+#write.zoo(reg(),con,index.name="date")
+#}
+#)
+
+#   
+#   
+#Computer the GARCH part
+#spec=ugarchspec(
+#variance.model=list(
+#model='sGARCH',
+#garchOrder=c(1,1),
+#submodel=NULL,
+#external.regressors=NULL,
+#variance.targeting=FALSE
+#),
+#mean.model=list(
+#armaOrder=c(0,0),
+#include.mean=FALSE,
+#archm=FALSE,
+#archpow=0,
+#arfima=FALSE,
+#external.regressors=NULL,
+#archex=FALSE
+#),
+#distribution.model='sstd',
+#)
+
+#fit=reactive({ugarchfit(spec=spec,data=log(1+reg()$ret))})
+
+#garchWhichPlot=reactive({
+#switch(input$garchPlotType,
+#"Series with 1% VaR limites"=2,
+#"QQ-Plot"=9
+#)
+#})
+
+#output$garchPlot=renderPlot({
+#plot(fit(),which=garchWhichPlot())
+#})
+
+#output$downloadReport=downloadHandler(filename="quickQuantsReport.pdf",
+#content=function(file){
+#Thanks, to brechtdv
+# generate PDF
+#knit2pdf("report.Rnw")
+
+# copy pdf to 'file'
+#file.copy("report.pdf", file)
+
+# delete generated files
+#file.remove("report.pdf", "report.tex",
+#"report.aux", "report.log")
+
+# delete folder with plots
+#unlink("figure", recursive = TRUE)
+#},
+#contentType = "application/pdf"
+#)
+
+
+
+})
 
 
 
