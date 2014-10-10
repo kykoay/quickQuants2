@@ -36,6 +36,6 @@ shinyUI(pageWithSidebar(
      
       textOutput("greeting"),
       htmlOutput("regTable"),
-      plotOutput("garchplot")
+      plotOutput("garchPlot")
       )
   ))
