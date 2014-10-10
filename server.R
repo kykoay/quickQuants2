@@ -46,76 +46,79 @@ shinyServer(function(input,output){
 
       output$regTable <- renderPrint({        
         
-        stargazer(modelCAPM(),modelFF3(),dep.var.labels=input$ticker,type="html",title=paste("Factor Loadings from",range(index(reg()))[1],"to",range(index(reg()))[2],":"))
+        stargazer(modelCAPM(),modelFF3(),dep.var.labels="Portfolio Returns",type="html",title=paste("Factor Loadings from",range(index(reg()))[1],"to",range(index(reg()))[2],":"))
         
       })
+      
+      #Allows user to download output
+      output$downloadData <- downloadHandler(
+        filename = "PortfolioReturns.csv",
+        content = function(con) {
+          write.zoo(reg(),con,index.name="date")
+        }
+      )
+    
+      #end of else statement under the observe part
     }
+    
+   
   })
 
-#Allows user to download output
-#output$downloadData <- downloadHandler(
-#filename = function() {
-#paste(input$ticker,'.csv', sep='')
-#},
-#content = function(con) {
-#write.zoo(reg(),con,index.name="date")
-#}
-#)
 
-#   
-#   
+
+  
 #Computer the GARCH part
-#spec=ugarchspec(
-#variance.model=list(
-#model='sGARCH',
-#garchOrder=c(1,1),
-#submodel=NULL,
-#external.regressors=NULL,
-#variance.targeting=FALSE
-#),
-#mean.model=list(
-#armaOrder=c(0,0),
-#include.mean=FALSE,
-#archm=FALSE,
-#archpow=0,
-#arfima=FALSE,
-#external.regressors=NULL,
-#archex=FALSE
-#),
-#distribution.model='sstd',
-#)
+spec=ugarchspec(
+variance.model=list(
+model='sGARCH',
+garchOrder=c(1,1),
+submodel=NULL,
+external.regressors=NULL,
+variance.targeting=FALSE
+),
+mean.model=list(
+armaOrder=c(0,0),
+include.mean=FALSE,
+archm=FALSE,
+archpow=0,
+arfima=FALSE,
+external.regressors=NULL,
+archex=FALSE
+),
+distribution.model='sstd',
+)
 
-#fit=reactive({ugarchfit(spec=spec,data=log(1+reg()$ret))})
+fit=reactive({ugarchfit(spec=spec,data=log(1+reg()$ret))})
 
-#garchWhichPlot=reactive({
-#switch(input$garchPlotType,
-#"Series with 1% VaR limites"=2,
-#"QQ-Plot"=9
-#)
-#})
+garchWhichPlot=reactive({
+switch(input$garchPlotType,
+"Series with 1% VaR limites"=2,
+"QQ-Plot"=9
+)
+})
 
-#output$garchPlot=renderPlot({
-#plot(fit(),which=garchWhichPlot())
-#})
+output$garchPlot=renderPlot({
+plot(fit(),which=garchWhichPlot())
+})
 
-#output$downloadReport=downloadHandler(filename="quickQuantsReport.pdf",
-#content=function(file){
+output$downloadReport=downloadHandler(filename="quickQuantsReport.pdf",
+content=function(file){
 #Thanks, to brechtdv
 # generate PDF
-#knit2pdf("report.Rnw")
+knit2pdf("report.Rnw")
 
 # copy pdf to 'file'
-#file.copy("report.pdf", file)
+file.copy("report.pdf", file)
 
 # delete generated files
-#file.remove("report.pdf", "report.tex",
-#"report.aux", "report.log")
+file.remove("report.pdf", "report.tex",
+"report.aux", "report.log")
 
 # delete folder with plots
-#unlink("figure", recursive = TRUE)
-#},
-#contentType = "application/pdf"
-#)
+unlink("figure", recursive = TRUE)
+},
+contentType = "application/pdf"
+)
 
 
 
