@@ -76,7 +76,7 @@ shinyServer(function(input,output){
                                ,range(index(reg()))[2]
                                ,":")
                   ,dep.var.labels="Portfolio Returns"
-                  ,dep.var.caption = "Dependant Variable")
+                  ,dep.var.caption = "Dependant Variable:")
         
         
       })
