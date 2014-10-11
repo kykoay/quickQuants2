@@ -7,6 +7,7 @@ library(knitr)
 
 shinyServer(function(input,output){
   source("buildPortReg.R")
+  
   #Download factor data from Ken French's website. Possibily to extend to higher dimensions, but have to harmonise factor time series.
   #This script is from Evan, and it extracts the FF-3 Factors and names it factors.
   download.file("http://mba.tuck.dartmouth.edu/pages/faculty/ken.french/ftp/F-F_Research_Data_Factors_daily.zip","factors.zip")
@@ -45,7 +46,13 @@ shinyServer(function(input,output){
     ),
     distribution.model='sstd',
   )
-  
+  # sample portfolio download
+  output$downloadSample <- downloadHandler(
+    filename = "SamplePortfolio.csv",
+    content = function(con) {
+      file.copy("sample.csv", con)
+    }
+  )
   inFile=reactive({input$file})
 
   observe({
@@ -75,6 +82,7 @@ shinyServer(function(input,output){
                                ,"to"
                                ,range(index(reg()))[2]
                                ,":")
+                  ,column.labels=c("CAPM","FF 3-Factor")
                   ,dep.var.labels="Portfolio Returns"
                   ,dep.var.caption = "Dependant Variable:")
         
